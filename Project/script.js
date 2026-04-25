@@ -1,197 +1,233 @@
-// Cache the HTML elements we will update during the game.
-const currentTurn = document.getElementById("current-turn");
-const gameMessage = document.getElementById("game-message");
-const choiceButtons = document.querySelectorAll(".btn-choice");
-const confirmButton = document.getElementById("confirm-btn");
-const countdownArea = document.getElementById("countdown-area");
-const timer = document.getElementById("timer");
-const resultsArea = document.getElementById("results-area");
-const winnerText = document.getElementById("winner-text");
-const choicesReveal = document.getElementById("choices-reveal");
-const nextRoundButton = document.getElementById("next-round-btn");
-const playerOneScore = document.getElementById("p1-score");
-const playerTwoScore = document.getElementById("p2-score");
-const historyList = document.getElementById("history-list");
+// Game State
+let currentMode = 'single';
+let player1Score = 0;
+let player2Score = 0;
+let drawCount = 0;
+let player1Choice = null;
+let player2Choice = null;
+let isProcessing = false;
 
-// Store the game data in one place so it is easy to update later.
-const gameState = {
-    currentPlayer: 1,
-    selectedChoice: "",
-    playerOneChoice: "",
-    playerTwoChoice: "",
-    playerOneScore: 0,
-    playerTwoScore: 0,
-    roundNumber: 1,
-    history: []
+const choices = {
+    rock: { emoji: '🪨', name: 'ROCK' },
+    paper: { emoji: '📜', name: 'PAPER' },
+    scissors: { emoji: '✂️', name: 'SCISSORS' }
 };
 
-function handleChoiceSelection(event) {
-    const clickedButton = event.target;
-    const chosenValue = clickedButton.dataset.choice;
+// DOM Elements
+const modeBtns = document.querySelectorAll('.mode-btn');
+const player1Card = document.getElementById('player1-card');
+const player2Card = document.getElementById('player2-card');
+const player1ChoiceEl = document.getElementById('player1-choice');
+const player2ChoiceEl = document.getElementById('player2-choice');
+const countdownEl = document.getElementById('countdown');
+const resultEl = document.getElementById('result');
+const score1El = document.getElementById('score1');
+const score2El = document.getElementById('score2');
+const drawsEl = document.getElementById('draws');
+const historyList = document.getElementById('history-list');
+const nextRoundBtn = document.getElementById('next-round');
+const resetGameBtn = document.getElementById('reset-game');
 
-    choiceButtons.forEach((button) => {
-        button.classList.remove("selected");
-    });
-
-    clickedButton.classList.add("selected");
-    gameState.selectedChoice = chosenValue;
-    confirmButton.disabled = false;
-}
-
-function resetCurrentSelection() {
-    gameState.selectedChoice = "";
-    confirmButton.disabled = true;
-
-    choiceButtons.forEach((button) => {
-        button.classList.remove("selected");
-    });.0
-
-    
-}
-
-function handleConfirmChoice() {
-    if (gameState.selectedChoice === "") {
-        return;
+function getWinner(p1, p2) {
+    if (p1 === p2) return 'draw';
+    if ((p1 === 'rock' && p2 === 'scissors') ||
+        (p1 === 'paper' && p2 === 'rock') ||
+        (p1 === 'scissors' && p2 === 'paper')) {
+        return 'player1';
     }
-
-    if (gameState.currentPlayer === 1) {
-        gameState.playerOneChoice = gameState.selectedChoice;
-        gameState.currentPlayer = 2;
-        currentTurn.textContent = "Player 2's Turn";
-        gameMessage.textContent = "Pass the device to Player 2, then choose and confirm.";
-        resetCurrentSelection();
-        return;
-    }
-
-    gameState.playerTwoChoice = gameState.selectedChoice;
-    gameMessage.textContent = "Both choices are locked in.";
-    resetCurrentSelection();
-    startCountdown();
-}
-
-function startCountdown() {
-    let countdownValue = 3;
-
-    currentTurn.textContent = "Get Ready";
-    gameMessage.textContent = "Revealing the result in...";
-    countdownArea.style.display = "block";
-    timer.textContent = countdownValue;
-    confirmButton.disabled = true;
-
-    choiceButtons.forEach((button) => {
-        button.disabled = true;
-    });
-
-    const countdownInterval = setInterval(() => {
-        countdownValue -= 1;
-        timer.textContent = countdownValue;
-
-        if (countdownValue === 0) {
-            clearInterval(countdownInterval);
-            countdownArea.style.display = "none";
-            showRoundResult();
-        }
-    }, 1000);
-}
-
-function getWinner() {
-    if (gameState.playerOneChoice === gameState.playerTwoChoice) {
-        return "draw";
-    }
-
-    const playerOneWins =
-        (gameState.playerOneChoice === "rock" && gameState.playerTwoChoice === "scissors") ||
-        (gameState.playerOneChoice === "paper" && gameState.playerTwoChoice === "rock") ||
-        (gameState.playerOneChoice === "scissors" && gameState.playerTwoChoice === "paper");
-
-    if (playerOneWins) {
-        return "player1";
-    }
-
-    return "player2";
-}
-
-function showRoundResult() {
-    const winner = getWinner();
-
-    updateScores(winner);
-    addRoundToHistory(winner);
-    currentTurn.textContent = "Round Result";
-    resultsArea.style.display = "block";
-    choicesReveal.textContent = `Player 1 chose ${gameState.playerOneChoice}. Player 2 chose ${gameState.playerTwoChoice}.`;
-
-    if (winner === "draw") {
-        winnerText.textContent = "It's a draw!";
-        gameMessage.textContent = "Both players picked the same choice.";
-        return;
-    }
-
-    else if (winner === "player1") {
-        winnerText.textContent = "Player 1 wins this round!";
-        gameMessage.textContent = "The round is over. Check the result below.";
-        return;
-    }
-
-    else {
-        winnerText.textContent = "Player 2 wins this round!";
-        gameMessage.textContent = "The round is over. Check the result below.";
-    }
+    return 'player2';
 }
 
 function updateScores(winner) {
-    if (winner === "player1") {
-        gameState.playerOneScore += 1;
-        playerOneScore.textContent = gameState.playerOneScore;
-        return;
-    }
+    if (winner === 'player1') player1Score++;
+    else if (winner === 'player2') player2Score++;
+    else drawCount++;
 
-    if (winner === "player2") {
-        gameState.playerTwoScore += 1;
-        playerTwoScore.textContent = gameState.playerTwoScore;
+    score1El.textContent = player1Score;
+    score2El.textContent = player2Score;
+    drawsEl.textContent = drawCount;
+}
+
+function addToHistory(p1, p2, winner) {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    
+    let resultText = winner === 'player1' ? '🏆 P1 WINS' :
+                     winner === 'player2' ? '🏆 P2 WINS' : '🤝 DRAW';
+
+    item.innerHTML = `
+        <span>${choices[p1].emoji} ${choices[p1].name}</span>
+        <span style="color:#888">${resultText}</span>
+        <span>${choices[p2].emoji} ${choices[p2].name}</span>
+    `;
+    historyList.prepend(item);
+
+    if (historyList.children.length > 6) {
+        historyList.removeChild(historyList.lastChild);
     }
 }
 
-function addRoundToHistory(winner) {
-    let roundSummary = `Round ${gameState.roundNumber}: `;
+async function aiChoose() {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    const options = ['rock', 'paper', 'scissors'];
+    player2Choice = options[Math.floor(Math.random() * 3)];
+    player2ChoiceEl.textContent = choices[player2Choice].emoji;
+}
 
-    if (winner === "draw") {
-        roundSummary += `Draw - both players chose ${gameState.playerOneChoice}`;
-    } else if (winner === "player1") {
-        roundSummary += `Player 1 won with ${gameState.playerOneChoice} against ${gameState.playerTwoChoice}`;
-    } else {
-        roundSummary += `Player 2 won with ${gameState.playerTwoChoice} against ${gameState.playerOneChoice}`;
+async function startCountdown() {
+    isProcessing = true;
+    countdownEl.style.opacity = '1';
+    resultEl.classList.remove('show');
+    player1Card.classList.remove('winner');
+    player2Card.classList.remove('winner');
+
+    for (let i = 3; i >= 1; i--) {
+        countdownEl.textContent = i;
+        await new Promise(r => setTimeout(r, 700));
     }
 
-    gameState.history.push(roundSummary);
+    countdownEl.style.opacity = '0';
 
-    const historyItem = document.createElement("li");
-    historyItem.textContent = roundSummary;
-    historyList.prepend(historyItem);
+    if (currentMode === 'single') {
+        await aiChoose();
+    }
+
+    // Reveal result
+    const winner = getWinner(player1Choice, player2Choice);
+
+    if (winner === 'player1') {
+        player1Card.classList.add('winner');
+    } else if (winner === 'player2') {
+        player2Card.classList.add('winner');
+    }
+
+    updateScores(winner);
+    addToHistory(player1Choice, player2Choice, winner);
+
+    let message = '';
+    if (winner === 'draw') message = "IT'S A DRAW!";
+    else if (winner === 'player1') message = "PLAYER 1 WINS!";
+    else message = currentMode === 'single' ? "AI WINS!" : "PLAYER 2 WINS!";
+
+    resultEl.textContent = message;
+    resultEl.style.borderColor = winner === 'player1' ? '#00f7ff' : '#ff00cc';
+    resultEl.classList.add('show');
+
+    nextRoundBtn.style.display = 'block';
+    isProcessing = false;
+}
+
+function handleChoice(player, choice) {
+    if (isProcessing) return;
+
+    if (currentMode === 'single') {
+        if (player === 1) {
+            player1Choice = choice;
+            player1ChoiceEl.textContent = choices[choice].emoji;
+            document.querySelectorAll('#player1-choices .choice-btn').forEach(b => 
+                b.classList.toggle('selected', b.dataset.choice === choice)
+            );
+            setTimeout(() => startCountdown(), 400);
+        }
+    } 
+    else if (currentMode === 'local') {
+        if (player === 1 && !player1Choice) {
+            player1Choice = choice;
+            player1ChoiceEl.textContent = choices[choice].emoji;
+            document.querySelectorAll('#player1-choices .choice-btn').forEach(b => 
+                b.classList.toggle('selected', b.dataset.choice === choice)
+            );
+            document.getElementById('player2-name').textContent = "PLAYER 2 - CHOOSE";
+        } 
+        else if (player === 2 && player1Choice && !player2Choice) {
+            player2Choice = choice;
+            player2ChoiceEl.textContent = choices[choice].emoji;
+            document.querySelectorAll('#player2-choices .choice-btn').forEach(b => 
+                b.classList.toggle('selected', b.dataset.choice === choice)
+            );
+            setTimeout(() => startCountdown(), 500);
+        }
+    }
 }
 
 function resetRound() {
-    gameState.currentPlayer = 1;
-    gameState.playerOneChoice = "";
-    gameState.playerTwoChoice = "";
-    gameState.roundNumber += 1;
+    player1Choice = null;
+    player2Choice = null;
 
-    resetCurrentSelection();
-    resultsArea.style.display = "none";
-    countdownArea.style.display = "none";
-    currentTurn.textContent = "Player 1's Turn";
-    gameMessage.textContent = "Select your move and press confirm!";
-    winnerText.textContent = "";
-    choicesReveal.textContent = "";
-    timer.textContent = "3";
+    player1ChoiceEl.textContent = '❓';
+    player2ChoiceEl.textContent = '❓';
 
-    choiceButtons.forEach((button) => {
-        button.disabled = false;
-    });
+    document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected'));
+    resultEl.classList.remove('show');
+    countdownEl.style.opacity = '0';
+    nextRoundBtn.style.display = 'none';
+
+    if (currentMode === 'local') {
+        document.getElementById('player2-name').textContent = "PLAYER 2";
+    }
 }
 
-choiceButtons.forEach((button) => {
-    button.addEventListener("click", handleChoiceSelection);
+function resetFullGame() {
+    if (!confirm("Reset the entire game?")) return;
+    player1Score = player2Score = drawCount = 0;
+    score1El.textContent = '0';
+    score2El.textContent = '0';
+    drawsEl.textContent = '0';
+    historyList.innerHTML = '';
+    resetRound();
+}
+
+function switchMode(mode) {
+    if (mode === 'online') {
+        alert("🌐 Online Multiplayer is coming soon!");
+        mode = 'single';
+    }
+
+    currentMode = mode;
+    modeBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+
+    document.getElementById('player2-name').textContent = 
+        mode === 'single' ? "AI OPPONENT" : "PLAYER 2";
+
+    resetFullGame();
+}
+
+// Event Listeners
+modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => switchMode(btn.dataset.mode));
 });
 
-confirmButton.addEventListener("click", handleConfirmChoice);
-nextRoundButton.addEventListener("click", resetRound);
+document.querySelectorAll('#player1-choices .choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => handleChoice(1, btn.dataset.choice));
+});
+
+document.querySelectorAll('#player2-choices .choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => handleChoice(2, btn.dataset.choice));
+});
+
+nextRoundBtn.addEventListener('click', resetRound);
+resetGameBtn.addEventListener('click', resetFullGame);
+
+// Keyboard Support (1 = Rock, 2 = Paper, 3 = Scissors)
+document.addEventListener('keydown', (e) => {
+    if (isProcessing) return;
+    let choice = null;
+    if (e.key === '1') choice = 'rock';
+    else if (e.key === '2') choice = 'paper';
+    else if (e.key === '3') choice = 'scissors';
+
+    if (choice) {
+        if (currentMode === 'single') handleChoice(1, choice);
+        else if (currentMode === 'local') {
+            if (!player1Choice) handleChoice(1, choice);
+            else if (!player2Choice) handleChoice(2, choice);
+        }
+    }
+});
+
+// Initialize
+function init() {
+    switchMode('single');
+}
+
+window.onload = init;
