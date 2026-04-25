@@ -3,59 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css">
-    
+    <title>NEON CLASH - Rock Paper Scissors</title>
+    <link rel="stylesheet" href="tst.css">
 </head>
 <body>
-    
-        <div id="game-wrap">
-            <h1>Rock Paper Scissors</h1>
+    <div class="bg-particles"></div>
 
-            <div id="status-container">
-                <h2 id="current-turn">Player 1's Turn</h2>
-                <p id="game-message">Select your move and press confirm!</p>
-            </div>
+    <div class="container">
+        <header>
+            <h1 class="title">NEON CLASH</h1>
+            <p class="subtitle">ROCK • PAPER • SCISSORS</p>
+        </header>
 
-        </div>
-        <div id="controls">
-            <div class="choice-buttons">
-                <button type="button" class="btn-choice" data-choice="rock">Rock</button>
-                <button type="button" class="btn-choice" data-choice="paper">Paper</button>
-                <button type="button" class="btn-choice" data-choice="scissors">Scissors</button>
-            </div>
-
-            <div class="confirm-area">
-                <button type="button" id="confirm-btn" disabled>Confirm Choice</button>
-            </div>
+        <!-- Mode Selection -->
+        <div class="mode-selection">
+            <button class="mode-btn active" data-mode="single">Single Player (vs AI)</button>
+            <button class="mode-btn" data-mode="local">2 Players Local</button>
+            <button class="mode-btn" data-mode="online">Online Mode</button>
         </div>
 
-        <div id="countdown-area" style="display: none;">
-            <h2 id="timer">3</h2>
-        </div>
-
-        <div id="results-area" style="display: none;">
-            <p id="winner-text"></p>
-            <p id="choices-reveal"></p>
-            <button type="button" id="next-round-btn">Play Next Round</button>
-        </div>
-
-        <div id="score-section">
-            <div id="total-score">
-                <h3>Total Score</h3>
-                <p>Player 1: <span id="p1-score">0</span> | Player 2: <span id="p2-score">0</span></p>
+        <div class="game-wrapper">
+            <!-- Player 1 -->
+            <div class="player-card" id="player1-card">
+                <div class="player-name" id="player1-name">PLAYER 1</div>
+                <div class="choice-display" id="player1-choice">❓</div>
+                <div class="choices" id="player1-choices">
+                    <button class="choice-btn" data-choice="rock">🪨</button>
+                    <button class="choice-btn" data-choice="paper">📜</button>
+                    <button class="choice-btn" data-choice="scissors">✂️</button>
+                </div>
             </div>
 
-                <div id="history-container">
-                <h3>Match History</h3>
-                <ul id="history-list">
-                </ul>
+            <!-- VS Center -->
+            <div class="vs-section">
+                <div class="vs-text">VS</div>
+                <div class="countdown" id="countdown">3</div>
+                <div class="result" id="result"></div>
+            </div>
+
+            <!-- Player 2 / AI -->
+            <div class="player-card" id="player2-card">
+                <div class="player-name" id="player2-name">AI OPPONENT</div>
+                <div class="choice-display" id="player2-choice">❓</div>
+                <div class="choices" id="player2-choices">
+                    <button class="choice-btn" data-choice="rock">🪨</button>
+                    <button class="choice-btn" data-choice="paper">📜</button>
+                    <button class="choice-btn" data-choice="scissors">✂️</button>
+                </div>
             </div>
         </div>
 
+        <!-- Scoreboard -->
+        <div class="scoreboard">
+            <div class="score">
+                <span class="label">PLAYER 1</span>
+                <span class="value" id="score1">0</span>
+            </div>
+            <div class="score">
+                <span class="label">DRAWS</span>
+                <span class="value" id="draws">0</span>
+            </div>
+            <div class="score">
+                <span class="label">PLAYER 2</span>
+                <span class="value" id="score2">0</span>
+            </div>
+        </div>
 
+        <!-- History -->
+        <div class="history-panel">
+            <h3>MATCH HISTORY</h3>
+            <div class="history-list" id="history-list"></div>
+        </div>
 
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn primary" id="next-round">NEXT ROUND</button>
+            <button class="btn" id="reset-game">RESET GAME</button>
+        </div>
+    </div>
 
-    <script src="script.js"></script>
+    <script src="tst.js"></script>
 </body>
 </html>
