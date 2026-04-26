@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main id="game-shell">
+        <div id="game-wrap">
+            <h1>Rock Paper Scissors</h1>
+
+            <div id="status-container">
+                <h2 id="current-turn">Player 1's Turn</h2>
+                <p id="game-message">Player 1, choose your move and lock it in.</p>
+            </div>
+
+            <div id="arena">
+                <section class="player-panel player-panel-active" id="player-1-panel">
+                    <div class="panel-overlay">
+                        <p id="player-1-overlay-text">Waiting for Player 2 to pick</p>
+                    </div>
+
+                    <h3>Player 1</h3>
+                    <p class="panel-status" id="player-1-status">Choose your move.</p>
+
+                    <div class="choice-buttons" data-player="1">
+                        <button type="button" class="btn-choice" data-player="1" data-choice="rock">Rock</button>
+                        <button type="button" class="btn-choice" data-player="1" data-choice="paper">Paper</button>
+                        <button type="button" class="btn-choice" data-player="1" data-choice="scissors">Scissors</button>
+                    </div>
+
+                    <button type="button" class="confirm-btn" id="player-1-confirm" disabled>Lock Choice</button>
+                </section>
+
+                <section class="player-panel player-panel-inactive" id="player-2-panel">
+                    <div class="panel-overlay">
+                        <p id="player-2-overlay-text">Waiting for Player 1 to finish</p>
+                    </div>
+
+                    <h3>Player 2</h3>
+                    <p class="panel-status" id="player-2-status">Wait for Player 1.</p>
+
+                    <div class="choice-buttons" data-player="2">
+                        <button type="button" class="btn-choice" data-player="2" data-choice="rock">Rock</button>
+                        <button type="button" class="btn-choice" data-player="2" data-choice="paper">Paper</button>
+                        <button type="button" class="btn-choice" data-player="2" data-choice="scissors">Scissors</button>
+                    </div>
+
+                    <button type="button" class="confirm-btn" id="player-2-confirm" disabled>Lock Choice</button>
+                </section>
+            </div>
+
+            <div id="countdown-area" style="display: none;">
+                <h2 id="timer">3</h2>
+            </div>
+
+            <div id="results-area" style="display: none;">
+                <p id="winner-text"></p>
+                <p id="choices-reveal"></p>
+                <button type="button" id="next-round-btn">Play Next Round</button>
+            </div>
+
+            <div id="score-section">
+                <div id="total-score">
+                    <h3>Total Score</h3>
+                    <p>Player 1: <span id="p1-score">0</span> | Player 2: <span id="p2-score">0</span></p>
+                </div>
+
+                <div id="history-container">
+                    <h3>Match History</h3>
+                    <ul id="history-list"></ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
